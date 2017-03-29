@@ -46,7 +46,6 @@ class AirCargoProblem(Problem):
             list of Action objects
         '''
 
-        # TODO create concrete Action objects based on the domain action schema for: Load, Unload, and Fly
         # concrete actions definition: specific literal action that does not include variables as with the schema
         # for example, the action schema 'Load(c, p, a)' can represent the concrete actions 'Load(C1, P1, SFO)'
         # or 'Load(C2, P2, JFK)'.  The actions for the planning problem must be concrete because the problems in
@@ -58,7 +57,20 @@ class AirCargoProblem(Problem):
             :return: list of Action objects
             '''
             loads = []
-            # TODO create all load ground actions from the domain Load action
+            for c in self.cargos:
+                for p in self.planes:
+                    for l in self.airports:
+                        precond_pos = [
+                            expr('At({}, {})'.format(c, l)),
+                            expr('At({}, {})'.format(p, l))
+                        ]
+                        precond_neg = [expr('In({}, {})'.format(c, p))]
+                        effect_add = [expr('In({}, {})'.format(c, p))]
+                        effect_rem = []
+                        load = Action(expr('Load({}, {})'.format(c, p)),
+                                      [precond_pos, precond_neg],
+                                      [effect_add, effect_rem])
+                        loads.append(load)
             return loads
 
         def unload_actions():
@@ -67,7 +79,23 @@ class AirCargoProblem(Problem):
             :return: list of Action objects
             '''
             unloads = []
-            # TODO create all Unload ground actions from the domain Unload action
+            for c in self.cargos:
+                for p in self.planes:
+                    for l in self.airports:
+                        precond_pos = [
+                            expr('At({}, {})'.format(c, l)),
+                            expr('At({}, {})'.format(p, l)),
+                            expr('In({}, {})'.format(c, p))
+                        ]
+                        precond_neg = []
+                        effect_add = []
+                        effect_rem = [expr('In({}, {})'.format(c, p))]
+                        unload = Action(
+                            expr('Load({}, {})'.format(c, p)),
+                            [precond_pos, precond_neg],
+                            [effect_add, effect_rem]
+                        )
+                        unloads.append(unload)
             return unloads
 
         def fly_actions():
